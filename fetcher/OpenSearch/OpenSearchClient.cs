@@ -23,6 +23,17 @@ public class OpenSearchClient(ILoggerFactory loggerFactory)
             await response.Content.ReadAsStringAsync());
     }
 
+    public async Task GetDocumentCountAsync()
+    {
+        using HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, $"http://localhost:9200/{JobsIndexName}/_count");
+        using HttpResponseMessage response = await this.httpClient.SendAsync(request);
+
+        this.logger.LogInformation(
+            "Count response, status={HttpStatusCode}, body={Body}",
+            response.StatusCode,
+            await response.Content.ReadAsStringAsync());
+    }
+
     public async Task IngestJobsAsync(List<dynamic> jobs)
     {
         List<dynamic> commands = new List<dynamic>();
@@ -36,10 +47,10 @@ public class OpenSearchClient(ILoggerFactory loggerFactory)
         string joinedCommands = string.Join("\n", commands.Select((c) => JsonConvert.SerializeObject(c))) + "\n";
         request.Content = new StringContent(joinedCommands, Encoding.UTF8, "application/x-ndjson");
 
-        this.logger.LogInformation("Prepared commands for ingestion, commands={Commands}", joinedCommands);
+        this.logger.LogDebug("Prepared commands for ingestion, commands={Commands}", joinedCommands);
 
         using HttpResponseMessage response = await this.httpClient.SendAsync(request);
-        this.logger.LogInformation(
+        this.logger.LogDebug(
             "Ingest response, status={HttpStatusCode}, body={Body}",
             response.StatusCode,
             await response.Content.ReadAsStringAsync());

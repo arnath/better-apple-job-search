@@ -23,6 +23,7 @@ public class Program
 
         OpenSearchClient openSearchClient = new OpenSearchClient(loggerFactory);
         await openSearchClient.PingAsync();
-        await openSearchClient.IngestJobsAsync(jobs);
+        await openSearchClient.GetDocumentCountAsync();
+        // await openSearchClient.IngestJobsAsync(jobs);
     }
 }

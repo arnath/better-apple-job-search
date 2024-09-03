@@ -1,46 +1,47 @@
 version: '3'
 services:
   btjs-search-1:
-    image: opensearchproject/opensearch:latest
+    image: elasticsearch:8.15.0
     container_name: btjs-search-1
     environment:
       - cluster.name=btjs-search
       - node.name=btjs-search-1
-      - bootstrap.memory_lock=true # along with the memlock settings below, disables swapping
-      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m" # minimum and maximum Java heap size, recommend setting both to 50% of system RAM
-      - "DISABLE_INSTALL_DEMO_CONFIG=true" # disables execution of install_demo_configuration.sh bundled with security plugin, which installs demo certificates and security configurations to OpenSearch
-      - "DISABLE_SECURITY_PLUGIN=true" # disables security plugin entirely in OpenSearch by setting plugins.security.disabled: true in opensearch.yml
       - "discovery.type=single-node" # disables bootstrap checks that are enabled when network.host is set to a non-loopback address
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-      nofile:
-        soft: 65536 # maximum number of open files for the OpenSearch user, set to at least 65536 on modern systems
-        hard: 65536
+      - xpack.security.enabled=false
     volumes:
-      - btjs-search-1:/usr/share/opensearch/data
+      - btjs-search-1:/usr/share/elasticsearch/data
     ports:
       - 9200:9200
       - 9600:9600 # required for Performance Analyzer
     networks:
       - btjs-search-docker-net
 
-  opensearch-dashboards:
-    image: opensearchproject/opensearch-dashboards:latest
-    container_name: btjs-dashboard
-    environment:
-      - 'OPENSEARCH_HOSTS=["http://btjs-search-1:9200"]'
-      - "DISABLE_SECURITY_DASHBOARDS_PLUGIN=true" # disables security dashboards plugin in OpenSearch Dashboards
+  btjs-kibana:
+    image: kibana:8.15.0
+    container_name: btjs-kibana
+    volumes:
+      - btjs-kibana:/usr/share/kibana
     ports:
       - 5601:5601
-    expose:
-      - "5601"
     networks:
       - btjs-search-docker-net
 
+  # btjs-dashboards:
+  #   image: opensearchproject/opensearch-dashboards:latest
+  #   container_name: btjs-dashboards
+  #   environment:
+  #     - 'OPENSEARCH_HOSTS=["http://btjs-search-1:9200"]'
+  #     - "DISABLE_SECURITY_DASHBOARDS_PLUGIN=true" # disables security dashboards plugin in OpenSearch Dashboards
+  #   ports:
+  #     - 5601:5601
+  #   expose:
+  #     - "5601"
+  #   networks:
+  #     - btjs-search-docker-net
+
 volumes:
   btjs-search-1:
+  btjs-kibana:
 
 networks:
   btjs-search-docker-net:
