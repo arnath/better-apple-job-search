@@ -1,6 +1,8 @@
-﻿using BetterAppleJobSearch.Data;
+﻿using BetterAppleJobSearch.Fetcher.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json.Linq;
+using OpenSearch.Net;
 
 namespace BetterAppleJobSearch.Fetcher;
 
@@ -14,11 +16,13 @@ public class Program
                     .AddConsole()
                     .SetMinimumLevel(LogLevel.Information)
                     .AddFilter("Microsoft.EntityFrameworkCore.Database.Command", LogLevel.Warning));
-        AppleJobFetcher jobFetcher = new AppleJobFetcher(loggerFactory);
 
-        await using DbContext dbContext = new EfCoreJobRepository(loggerFactory);
-        await dbContext.Database.EnsureCreatedAsync();
+        using AppleJobFetcher jobFetcher = new AppleJobFetcher(loggerFactory);
+        List<dynamic> jobs = await jobFetcher.FetchAsync("./locations-tiny.json");
 
-        await jobFetcher.FetchAsync("./locations-2024-09-01.json");
+        OpenSearchLowLevelClient openSearchClient = new OpenSearchLowLevelClient();
+        StringResponse openSearchResponse = await openSearchClient.BulkAsync<StringResponse>(PostData.MultiJson(jobs));
+        Console.WriteLine(openSearchResponse.HttpStatusCode);
+        Console.WriteLine(openSearchResponse.Body);
     }
 }
