@@ -1,11 +1,10 @@
 using System.Text;
-using BetterAppleJobSearch.Fetcher.Data;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 
-namespace BetterAppleJobSearch.Fetcher;
+namespace BetterAppleJobSearch.Fetcher.Apple;
 
 public class AppleJobFetcher(ILoggerFactory loggerFactory) : IDisposable
 {
@@ -82,14 +81,13 @@ public class AppleJobFetcher(ILoggerFactory loggerFactory) : IDisposable
 
             using HttpResponseMessage response = await this.httpClient.SendAsync(request);
             string responseJson = await response.Content.ReadAsStringAsync();
-            this.nextCsrfToken = response.Headers.GetValues(AppleCsrfHeader).FirstOrDefault();
-
-            if (!response.IsSuccessStatusCode)
+            if (!response.IsSuccessStatusCode || !response.Headers.TryGetValues(AppleCsrfHeader, out var headerValues))
             {
                 this.logger.LogError("Request failed, status code={statusCode}, body={body}", response.StatusCode, responseJson);
                 break;
             }
 
+            this.nextCsrfToken = headerValues?.FirstOrDefault();
             dynamic result = JObject.Parse(responseJson);
             int originalJobCount = jobs.Count;
             jobs.AddRange(result.searchResults);

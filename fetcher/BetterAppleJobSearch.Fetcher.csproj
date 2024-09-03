@@ -12,7 +12,6 @@
       <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.8" />
       <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
       <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-      <PackageReference Include="Opensearch.Net" Version="1.7.1" />
     </ItemGroup>
 
     <ItemGroup>

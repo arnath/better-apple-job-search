@@ -1,5 +1,6 @@
-﻿using Microsoft.Extensions.Logging;
-using OpenSearch.Net;
+﻿using BetterAppleJobSearch.Fetcher.Apple;
+using BetterAppleJobSearch.Fetcher.OpenSearch;
+using Microsoft.Extensions.Logging;
 
 namespace BetterAppleJobSearch.Fetcher;
 
@@ -20,8 +21,8 @@ public class Program
         using AppleJobFetcher jobFetcher = new AppleJobFetcher(loggerFactory);
         List<dynamic> jobs = await jobFetcher.FetchAsync("./locations-tiny.json");
 
-        OpenSearchClient openSearchClient = new OpenSearchClient(loggerFactory, MinimumLogLevel);
+        OpenSearchClient openSearchClient = new OpenSearchClient(loggerFactory);
         await openSearchClient.PingAsync();
-        // await openSearchClient.IngestJobsAsync(jobs);
+        await openSearchClient.IngestJobsAsync(jobs);
     }
 }
