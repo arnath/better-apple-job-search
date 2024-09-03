@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BetterAppleJobSearch", "BetterAppleJobSearch\BetterAppleJobSearch.csproj", "{B4BE3FDA-6421-439C-85BF-69E5565347B8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BetterAppleJobSearch.Fetcher", "fetcher\BetterAppleJobSearch.Fetcher.csproj", "{B4BE3FDA-6421-439C-85BF-69E5565347B8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

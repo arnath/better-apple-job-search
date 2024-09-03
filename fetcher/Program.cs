@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace BetterAppleJobSearch;
+namespace BetterAppleJobSearch.Fetcher;
 
 public class Program
 {

@@ -1,11 +1,11 @@
 using System.Text;
-using BetterAppleJobSearch.Data;
+using BetterAppleJobSearch.Fetcher.Data;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 
-namespace BetterAppleJobSearch;
+namespace BetterAppleJobSearch.Fetcher;
 
 public class AppleJobFetcher(ILoggerFactory loggerFactory) : IDisposable
 {

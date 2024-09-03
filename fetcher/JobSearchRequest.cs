@@ -1,6 +1,6 @@
 using Newtonsoft.Json;
 
-namespace BetterAppleJobSearch;
+namespace BetterAppleJobSearch.Fetcher;
 
 internal class JobSearchRequest
 {

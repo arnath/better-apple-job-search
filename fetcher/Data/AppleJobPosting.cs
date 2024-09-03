@@ -1,4 +1,4 @@
-namespace BetterAppleJobSearch.Data;
+namespace BetterAppleJobSearch.Fetcher.Data;
 
 public class AppleJobPosting
 {

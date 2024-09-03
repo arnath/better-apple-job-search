@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Logging;
 
-namespace BetterAppleJobSearch.Data;
+namespace BetterAppleJobSearch.Fetcher.Data;
 
 public class EfCoreJobRepository(ILoggerFactory loggerFactory) : DbContext
 {
