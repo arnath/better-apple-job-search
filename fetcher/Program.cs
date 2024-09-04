@@ -18,12 +18,13 @@ public class Program
                     .AddFilter("Microsoft.EntityFrameworkCore.Database.Command", LogLevel.Warning));
         ILogger logger = loggerFactory.CreateLogger<Program>();
 
-        using AppleJobFetcher jobFetcher = new AppleJobFetcher(loggerFactory);
-        List<dynamic> jobs = await jobFetcher.FetchAsync("./locations-tiny.json");
+        // using AppleJobFetcher jobFetcher = new AppleJobFetcher(loggerFactory);
+        // List<dynamic> jobs = await jobFetcher.FetchAsync("./locations-2024-09-01.json");
 
         OpenSearchClient openSearchClient = new OpenSearchClient(loggerFactory);
-        await openSearchClient.PingAsync();
-        await openSearchClient.GetDocumentCountAsync();
+        // await openSearchClient.PingAsync();
         // await openSearchClient.IngestJobsAsync(jobs);
+        await openSearchClient.GetDocumentCountAsync();
+        logger.LogInformation("Done");
     }
 }

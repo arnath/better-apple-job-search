@@ -20,7 +20,7 @@ There's also some additional weirdness with how the location and search APIs wor
   three of these locations to the job search API, only the first two return any actual results.
 
 Looking at the above further, it actually seems inconsistent there too. Like if you search China,
-you get some results. I think what I will try doing is sending the "state" entry for each item as well as the country. 
+you get some results. I think what I will try doing is sending the "state" entry for each item as well as the country.
 
 ### Process
 
