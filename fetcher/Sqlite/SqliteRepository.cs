@@ -11,7 +11,7 @@ public class SqliteRepository(ILoggerFactory loggerFactory) : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder options)
         => options
-            .UseSqlite("Data Source=/Users/vijay/code/better-apple-job-search/db/jobs-2024-09-01.db")
+            .UseSqlite("Data Source=/Users/vijay/code/better-apple-job-search/ui/static/jobs-2024-09-01.db")
             .UseSnakeCaseNamingConvention()
             .UseLoggerFactory(loggerFactory);
 
