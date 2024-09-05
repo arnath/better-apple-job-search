@@ -1,28 +1,26 @@
 using System.Text;
+using BetterAppleJobSearch.Common;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Serialization;
 
 namespace BetterAppleJobSearch.Fetcher.Apple;
 
 public class AppleJobFetcher(ILoggerFactory loggerFactory) : IDisposable
 {
+    /// <summary>
+    /// ORDER BIRD FOOD AND COMMENT ON MEGANS FACEBOOK POST
+    /// </summary>
     private const string AppleCsrfHeader = "X-Apple-CSRF-Token";
-
-    private static readonly JsonSerializerSettings DefaultSerializerSettings = new()
-    {
-        ContractResolver = new CamelCasePropertyNamesContractResolver()
-    };
 
     private readonly ILogger logger = loggerFactory.CreateLogger<AppleJobFetcher>();
     private readonly HttpClient httpClient = new HttpClient();
     private string? nextCsrfToken;
 
-    public async Task<List<dynamic>> FetchAsync(string locationsJsonFilePath)
+    public async Task<List<JobResource>> FetchAsync(string locationsJsonFilePath)
     {
         List<dynamic> locations = await ParseLocationsJsonAsync(locationsJsonFilePath);
-        Dictionary<string, dynamic> allJobs = new Dictionary<string, dynamic>();
+        Dictionary<string, JobResource> allJobs = new Dictionary<string, JobResource>();
         for (int i = 0; i < locations.Count; i++)
         {
             List<dynamic> locationJobs = await this.FetchJobsForLocationAsync(locations[i].id.ToString());
@@ -31,7 +29,7 @@ public class AppleJobFetcher(ILoggerFactory loggerFactory) : IDisposable
                 string? jobId = job.id;
                 if (jobId != null)
                 {
-                    allJobs[jobId] = job;
+                    allJobs[jobId] = CreateJobResource(job);
                 }
             }
 
@@ -50,12 +48,29 @@ public class AppleJobFetcher(ILoggerFactory loggerFactory) : IDisposable
         this.httpClient.Dispose();
     }
 
-    private async Task<List<dynamic>> ParseLocationsJsonAsync(string locationsJsonFilePath)
+    private static JobResource CreateJobResource(dynamic jobData)
     {
-        string locationsJson = await File.ReadAllTextAsync(locationsJsonFilePath);
-        JArray locations = JArray.Parse(locationsJson);
+        // If this field doesn't exist, this assigns a default value to postDate.
+        DateTime.TryParse(jobData.postDateInGMT?.ToString(), out DateTime postDate);
 
-        return locations.Cast<dynamic>().ToList();
+        JobResource resource = new JobResource()
+        {
+            Id = $"apple_{jobData.id.ToString()}",
+            Link = new Uri($"https://jobs.apple.com/en-us/details/{jobData.positionId.ToString()}"),
+            PostDate = postDate,
+            Title = jobData.postingTitle.ToString(),
+            Summary = jobData.jobSummary.ToString(),
+            TeamName = jobData.team?.teamName?.ToString(),
+            IsRemote = (bool)jobData.homeOffice,
+        };
+
+        foreach (dynamic location in jobData.locations)
+        {
+            resource.Locations.Add(
+                $"{location.name?.ToString() ?? "unknown"}, {location.countryName?.ToString() ?? "unknown"}");
+        }
+
+        return resource;
     }
 
     private async Task<List<dynamic>> FetchJobsForLocationAsync(string locationId)
@@ -68,7 +83,7 @@ public class AppleJobFetcher(ILoggerFactory loggerFactory) : IDisposable
             using HttpRequestMessage request =
                 new HttpRequestMessage(HttpMethod.Post, "https://jobs.apple.com/api/role/search");
 
-            string serializedRequest = JsonConvert.SerializeObject(jobSearchRequest, DefaultSerializerSettings);
+            string serializedRequest = JsonConvert.SerializeObject(jobSearchRequest);
             request.Content = new StringContent(serializedRequest, Encoding.UTF8, "application/json");
             if (this.nextCsrfToken != null)
             {
@@ -110,5 +125,13 @@ public class AppleJobFetcher(ILoggerFactory loggerFactory) : IDisposable
         }
 
         return jobs;
+    }
+
+    private async Task<List<dynamic>> ParseLocationsJsonAsync(string locationsJsonFilePath)
+    {
+        string locationsJson = await File.ReadAllTextAsync(locationsJsonFilePath);
+        JArray locations = JArray.Parse(locationsJson);
+
+        return locations.Cast<dynamic>().ToList();
     }
 }

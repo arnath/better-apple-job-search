@@ -1,7 +1,10 @@
-﻿using BetterAppleJobSearch.Fetcher.Apple;
-using BetterAppleJobSearch.Fetcher.OpenSearch;
-using BetterAppleJobSearch.Fetcher.Sqlite;
+﻿using System.Net.Mime;
+using System.Text;
+using BetterAppleJobSearch.Common;
+using BetterAppleJobSearch.Fetcher.Apple;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace BetterAppleJobSearch.Fetcher;
 
@@ -11,6 +14,11 @@ public class Program
 
     public static async Task Main()
     {
+        JsonConvert.DefaultSettings = () => new JsonSerializerSettings()
+        {
+            ContractResolver = new CamelCasePropertyNamesContractResolver()
+        };
+
         ILoggerFactory loggerFactory =
             LoggerFactory.Create((builder) =>
                 builder
@@ -19,15 +27,25 @@ public class Program
                     .AddFilter("Microsoft.EntityFrameworkCore.Database.Command", LogLevel.Warning));
         ILogger logger = loggerFactory.CreateLogger<Program>();
 
-        using SqliteRepository repository = new SqliteRepository(loggerFactory);
-        await repository.Database.EnsureDeletedAsync();
-        await repository.Database.EnsureCreatedAsync();
-
         using AppleJobFetcher jobFetcher = new AppleJobFetcher(loggerFactory);
-        List<dynamic> jobs = await jobFetcher.FetchAsync("./locations-2024-09-01.json");
+        List<JobResource> jobs = await jobFetcher.FetchAsync("./locations-2024-09-01.json");
 
-        await repository.InsertAppleJobsAsync(jobs);
+        BulkInsertRequest bulkInsertRequest = new BulkInsertRequest(jobs);
+        using HttpClient httpClient = new HttpClient();
+        using HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, "http://localhost:8080/jobs/bulk-insert");
+        request.Content = new StringContent(
+            JsonConvert.SerializeObject(bulkInsertRequest),
+            Encoding.UTF8,
+            MediaTypeNames.Application.Json);
 
-        logger.LogInformation("Done");
+        using HttpResponseMessage response = await httpClient.SendAsync(request);
+        string responseJson = await response.Content.ReadAsStringAsync();
+        if (!response.IsSuccessStatusCode)
+        {
+            logger.LogError("Request failed, status code={statusCode}, body={body}", response.StatusCode, responseJson);
+            return;
+        }
+
+        logger.LogInformation("Successfully wrote jobs to backend.");
     }
 }

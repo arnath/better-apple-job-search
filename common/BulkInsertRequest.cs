@@ -2,5 +2,10 @@ namespace BetterAppleJobSearch.Common;
 
 public class BulkInsertRequest
 {
-    public required List<JobResource> Jobs { get; set; }
+    public BulkInsertRequest(List<JobResource> jobs)
+    {
+        this.Jobs = jobs;
+    }
+
+    public List<JobResource> Jobs { get; set; }
 }

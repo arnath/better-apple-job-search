@@ -16,6 +16,10 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\common\BetterAppleJobSearch.Common.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
       <None Update="locations-small.json">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
